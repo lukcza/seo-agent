@@ -147,10 +147,4 @@ W repozytorium skonfigurowany jest automatyczny rurociąg CI/CD (`.github/workfl
 2.  **Uruchomienie wszystkich 13 testów jednostkowych** (z keszowaniem pakietów pip).
 3.  **Weryfikację budowania obrazu Docker** (z szybkim keszowaniem warstw GHA).
 
----
-
-## 🔑 Bezpieczeństwo i Dobre Praktyki w Repozytorium
-
-1.  **Nigdy nie publikuj pliku `.env` na GitHubie!** Plik `.env` zawiera Twoje prywatne klucze API i jest automatycznie ignorowany przez `.gitignore`.
-2.  Lokalna baza danych SQLite (`seo_cache.db` oraz inne pliki `*.db`) są ignorowane, dzięki czemu repozytorium pozostaje lekkie i bezpieczne.
-3.  Wszystkie klucze API w środowiskach chmurowych (np. przy hostowaniu na Render, Heroku lub we własnym klastrze) powinny być ustawiane jako **Zmienne Środowiskowe (Environment Variables)**.
+--- 
