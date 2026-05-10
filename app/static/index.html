@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktywny Audytor i Asystent SEO</title>
+
+    <!-- Modern Typography and Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- Header Section -->
+        <header>
+            <div class="badge">Sztuczna Inteligencja &amp; SEO</div>
+            <h1>Interaktywny Asystent SEO</h1>
+            <p>Zoptymalizuj pozycjonowanie swojej firmy w wyszukiwarkach w 3 prostych krokach. Przeanalizuj swoją
+                witrynę technicznie i merytorycznie.</p>
+        </header>
+
+        <!-- Main Layout Split -->
+        <div class="app-layout">
+
+            <!-- Sidebar with saved SQLite cache entries -->
+            <aside class="card">
+                <div class="card-title">
+                    <i class="fas fa-database"></i>
+                    Zapisane Audyty
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Wybierz zapisaną wcześniej
+                    sesję, aby natychmiast załadować wyniki:</p>
+                <div class="history-list" id="history-list">
+                    <!-- History rows will render dynamically here -->
+                </div>
+            </aside>
+
+            <!-- Main Work Area -->
+            <main>
+
+                <!-- Step Wizard indicators -->
+                <div class="steps-nav">
+                    <div class="step-nav-item active" id="nav-step-1">1. Skanowanie strony &amp; opis</div>
+                    <div class="step-nav-item" id="nav-step-2">2. Audyt techniczny &amp; braki</div>
+                    <div class="step-nav-item" id="nav-step-3">3. Optymalizacja SEO</div>
+                </div>
+
+                <!-- STEP 1: Initialization Panel -->
+                <div class="card" id="panel-step-1">
+                    <div class="card-title">
+                        <i class="fas fa-search"></i>
+                        Krok 1: Wczytanie strony www i opisu
+                    </div>
+
+                    <div class="form-group">
+                        <label for="input-url">Adres URL Twojej strony (opcjonalnie)</label>
+                        <input type="url" id="input-url" placeholder="https://twoja-strona-www.pl" autocomplete="off">
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Jeśli podasz link,
+                            przeanalizujemy go pod kątem technicznym i błędów SEO.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="input-prompt">Opis biznesu / Tematyka / Prompt początkowy</label>
+                        <textarea id="input-prompt" rows="6"
+                            placeholder="Opisz krótko swój biznes, usługi, nazwę firmy i to, czym się zajmujesz..."></textarea>
+                        <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Użyj własnego promptu lub kliknij
+                                pomocniczy:</span>
+                            <button class="copy-btn" id="btn-load-sample"
+                                style="padding: 2px 8px; font-size: 0.75rem;">Załaduj wzorzec Star Wars</button>
+                        </div>
+                    </div>
+
+                    <button class="btn" id="btn-start-audit">
+                        Zacznij Analizę i Audyt SEO
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <!-- STEP 2: Technical Checklists and Dynamic Gaps Form -->
+                <div class="card" id="panel-step-2" style="display: none;">
+
+                    <!-- Website technical stats cards (only visible if URL was scanned) -->
+                    <div id="audit-results-card">
+                        <div class="card-title">
+                            <i class="fas fa-stethoscope"></i>
+                            Audyt Techniczny Strony WWW
+                        </div>
+
+                        <div class="metrics-grid" id="metrics-grid">
+                            <!-- Metric widgets render dynamically -->
+                        </div>
+
+                        <div class="card-title" style="border:none; margin-top: 25px; margin-bottom: 5px;">
+                            <i class="fas fa-robot"></i>
+                            Błędy i zalecenia optymalizacyjne (Merytoryczny Audyt AI)
+                        </div>
+                        <div class="report-box" id="ai-report-box">
+                            <!-- Gemini Technical Audit goes here -->
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px solid rgba(255, 255, 255, 0.05); margin: 30px 0;">
+                    </div>
+
+                    <!-- Dynamic Prompters Gaps Form (3 Steps Clarification) -->
+                    <div class="card-title">
+                        <i class="fas fa-magic"></i>
+                        Krok 2: Uszczegółowienie brakujących informacji (3 Etapy)
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px;">
+                        Nasza sztuczna inteligencja przeanalizowała Twój tekst i wykryła brakujące wątki niezbędne do
+                        optymalnego pozycjonowania strony. Odpowiedz na brakujące pytania:
+                    </p>
+
+                    <div id="gaps-form">
+                        <!-- Dynamic generated questions and inputs go here -->
+                    </div>
+
+                    <button class="btn" id="btn-generate-seo" style="margin-top: 15px;">
+                        Generuj ostateczne materiały SEO
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                    </button>
+                </div>
+
+                <!-- STEP 3: SEO Outputs Panel with Clipboard copies and feedback regenerate loop -->
+                <div class="card" id="panel-step-3" style="display: none;">
+                    <div class="card-title">
+                        <i class="fas fa-crown"></i>
+                        Krok 3: Gotowe Wyniki Optymalizacji SEO
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 25px;">
+                        Oto w pełni zoptymalizowany zestaw copywritingu SEO przygotowany pod Twoją grupę docelową i
+                        lokalizację. Skopiuj go do swojej witryny:
+                    </p>
+
+                    <!-- Title Copy Block -->
+                    <div class="copy-block">
+                        <div class="copy-block-header">
+                            <span>Tytuł strony (SEO Title)</span>
+                            <button class="copy-btn" onclick="copyText('result-title', this)">Skopiuj</button>
+                        </div>
+                        <div class="copy-content bold" id="result-title">Główny Tytuł Strony SEO</div>
+                    </div>
+
+                    <!-- Description Copy Block -->
+                    <div class="copy-block">
+                        <div class="copy-block-header">
+                            <span>Opis strony (Meta Description)</span>
+                            <button class="copy-btn" onclick="copyText('result-description', this)">Skopiuj</button>
+                        </div>
+                        <div class="copy-content" id="result-description">Meta Opis Strony</div>
+                    </div>
+
+                    <!-- Keywords Copy Block -->
+                    <div class="copy-block">
+                        <div class="copy-block-header">
+                            <span>Słowa kluczowe (Keywords)</span>
+                            <button class="copy-btn" onclick="copyText('result-keywords', this)">Skopiuj</button>
+                        </div>
+                        <div class="copy-content" id="result-keywords">keywords, seo, optymalizacja</div>
+                    </div>
+
+                    <!-- Content Copy Block -->
+                    <div class="copy-block">
+                        <div class="copy-block-header">
+                            <span>Zoptymalizowana Treść Strony</span>
+                            <button class="copy-btn" onclick="copyText('result-content', this)">Skopiuj</button>
+                        </div>
+                        <div class="copy-content" id="result-content"
+                            style="white-space: pre-line; padding-top: 10px; line-height: 1.8;">
+                            Zoptymalizowana treść strony.
+                        </div>
+                    </div>
+
+                    <!-- Save Database Form -->
+                    <div class="form-group"
+                        style="margin-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 20px;">
+                        <label for="save-id">Zapisz sesję w lokalnej bazie danych jako:</label>
+                        <div style="display: grid; grid-template-columns: 1fr 150px; gap: 10px;">
+                            <input type="text" id="save-id" placeholder="np. strona-firmowa-pl">
+                            <button class="btn" id="btn-save-db" style="padding: 0; box-shadow: none;">Zapisz w
+                                Bazie</button>
+                        </div>
+                    </div>
+
+                    <!-- Regenerate Loop block -->
+                    <div class="form-group"
+                        style="margin-top: 25px; background: rgba(255, 255, 255, 0.01); border: 1px dashed var(--border-glass); padding: 20px; border-radius: 10px;">
+                        <label for="input-correction"><i class="fas fa-edit"></i> Masz jakieś poprawki? Wpisz je
+                            poniżej:</label>
+                        <textarea id="input-correction" rows="2"
+                            placeholder="np. Dodaj informację o zniżce -10%, napisz tekst bardziej dynamicznym tonem..."></textarea>
+                        <button class="btn btn-secondary" id="btn-regenerate" style="margin-top: 10px;">
+                            Wprowadź poprawki i wygeneruj ponownie
+                            <i class="fas fa-rotate"></i>
+                        </button>
+                    </div>
+
+                </div>
+
+            </main>
+        </div>
+
+        <!-- Footer Credits -->
+        <footer>
+            Stworzono przez <a href="https://github.com/lukcza/">Łukasz Czajkowski</a> &copy; 2026.
+        </footer>
+    </div>
+
+    <!-- Full-screen translucent Loading Overlay -->
+    <div id="loader-box"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(8, 12, 20, 0.9); z-index: 9999; align-items: center; justify-content: center;">
+        <div class="loading-wrapper">
+            <div class="spinner"></div>
+            <div id="loader-text"
+                style="font-weight: 700; color: var(--text-light); text-align: center; max-width: 400px; font-size:1.1rem;">
+                Trwa przetwarzanie żądania przez sztuczną inteligencję...</div>
+        </div>
+    </div>
+
+    <!-- Core App JS script -->
+    <script src="js/app.js"></script>
+</body>
+
+</html>
