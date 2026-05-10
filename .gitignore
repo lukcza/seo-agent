@@ -38,3 +38,6 @@ dist/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Agent workflows and metadata
+.agents/
