@@ -77,7 +77,7 @@ class SEODatabaseManager:
         self.cursor.execute("DELETE FROM seo_cache WHERE file_target = ?", (file_target,))
         self.conn.commit()
         self.close_connection()
-    def clear_rag_knowledge(self)-> None:
+    def clear_rag_knowledge(self) -> None:
         self._init_db()
         self.cursor.execute("DELETE FROM rag_knowledge")
         self.conn.commit()
