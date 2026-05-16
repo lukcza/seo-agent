@@ -14,7 +14,7 @@ class RAGServices:
         self.db_manager = SEODatabaseManager()
         self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-    def chunk_document(self, document:str, chunk_size:int=1000, chunk_overlap:int=200) -> list[str]:
+    def chunk_document(self, document:str, chunk_size:int=800, chunk_overlap:int=200) -> list[str]:
         text_splitter = MarkdownTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         return text_splitter.split_text(document)            
 
@@ -39,24 +39,23 @@ class RAGServices:
         scored_chunks.sort(key=lambda x: x[0], reverse=True)
         relevant_text =  "\n\n".join([chunk[0] for chunk in scored_chunks[:top_k]])
         return relevant_text
-    def setup_knowledge_base(self, document:str) -> None:
+    def setup_knowledge_base(self, document_text: str, source_name: str = "guidelines.pdf") -> None:
         """Tworzy bazę wiedzy z dokumentu."""
-        self.db_manager.clear_rag_knowledge()
-        chunks = self.chunk_document(document)
+        chunks = self.chunk_document(document_text)
         embeddings = self.vectorize_chunks(chunks)
         for chunk, embedding in zip(chunks, embeddings):
-            self.db_manager.save_rag_chunk(document, chunk, embedding)
+            self.db_manager.save_rag_chunk(source_name, chunk, embedding)
+
 if __name__ == "__main__":
     rag_services = RAGServices()
-    pdf_converter = PDFConverter()
-    document = "./processed_guideliness.md"
+    file_path = "./google_search_guidelines.md"
     try:
-        with open(document, "r", encoding="utf-8") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             document = file.read()
     except FileNotFoundError:
-        print(f"Błąd: Nie znaleziono pliku: {document}")
+        print(f"Błąd: Nie znaleziono pliku: {file_path}")
         exit(1)
     except Exception as e:
         print(f"Błąd: Wystąpił nieoczekiwany błąd podczas odczytu pliku: {e}")
         exit(1)
-    rag_services.setup_knowledge_base(document)
+    rag_services.setup_knowledge_base(document, source_name=file_path)

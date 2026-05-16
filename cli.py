@@ -1,3 +1,4 @@
+from app.services.rag_services import RAGServices
 import os
 import asyncio
 import logging
@@ -166,6 +167,7 @@ async def run_app_async():
     print_banner()
     
     db_manager = SEODatabaseManager()
+    rag_services = RAGServices()
     
     # Choose input source
     print(f"{C_BOLD}Wybierz źródło tekstu lub prompta początkowego:{C_RESET}")
@@ -245,9 +247,12 @@ async def run_app_async():
             # Print beautiful technical summary of errors and missing elements
             print_technical_summary(website_metrics)
             
-            # Generate advanced Gemini SEO analysis report
+            # Generate advanced Gemini SEO analysis report with RAG
+            print(f"🔍 {C_CYAN}Pobieranie wytycznych technicznych z bazy wiedzy RAG...{C_RESET}")
+            tech_knowledge = rag_services.query_knowledge("technical seo audit canonical robots sitemap headers quality")
+
             print(f"🤖 {C_CYAN}Generowanie szczegółowego raportu błędów i zalecań przez AI...{C_RESET}")
-            website_analysis_report = await analyze_scraped_seo(website_metrics)
+            website_analysis_report = await analyze_scraped_seo(website_metrics, knowledge_context=tech_knowledge)
             
             print(f"\n{C_MAGENTA}{C_BOLD}📝 RAPORT AUDYTU SEO (OD AI):{C_RESET}")
             print("-" * 60)
@@ -296,12 +301,17 @@ async def run_app_async():
     print_step(3, "Generowanie zoptymalizowanych materiałów i metadanych SEO")
     print(f"🚀 {C_GREEN}Łączenie zebranych informacji i generowanie ostatecznych materiałów...{C_RESET}\n")
     
+    # Get content optimization guidelines from RAG
+    print(f"🔍 {C_CYAN}Pobieranie wytycznych optymalizacji treści z bazy wiedzy RAG...{C_RESET}")
+    content_knowledge = rag_services.query_knowledge(f"seo optimization for {original_content} {answers['usp']}")
+
     seo_response = await get_refined_seo_data(
         content=original_content,
         locality=answers["locality"],
         target_audience=answers["target_audience"],
         usp=answers["usp"],
-        website_analysis=website_analysis_report if website_analysis_report else "Brak danych dotychczasowej strony."
+        website_analysis=website_analysis_report if website_analysis_report else "Brak danych dotychczasowej strony.",
+        knowledge_context=content_knowledge
     )
     
     if not seo_response:
@@ -374,7 +384,8 @@ async def run_app_async():
                 locality=answers["locality"],
                 target_audience=answers["target_audience"],
                 usp=answers["usp"],
-                website_analysis=website_analysis_report
+                website_analysis=website_analysis_report,
+                knowledge_context=content_knowledge
             )
             
             # Show updated output

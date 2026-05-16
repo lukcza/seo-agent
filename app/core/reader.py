@@ -124,7 +124,19 @@ class PDFConverter:
 if __name__ == "__main__":
     converter = PDFConverter()
     print("konwertowanie pdf do markdown")
-    markdown = converter.convert_pdf_to_markdown("hsw-sqrg.pdf")
-    converter.save_to_markdown(markdown, "processed_guideliness.md")
+    markdown = converter.convert_pdf_to_markdown("searchqualityevaluatorguidelines.pdf", noise = [
+    "Search Quality Evaluator Guidelines",
+    "December 15, 2022",  # (lub inna data Twojej wersji PDF)
+    "Proprietary and Confidential",
+    "Page ",
+    "Copyright ",
+    "Google Search Quality",
+    "Guidelines:",
+    "Evaluator Guidelines",
+    "of 176",  # (zmień liczbę na całkowitą liczbę stron Twojego PDF)
+    "All Rights Reserved",
+    "Confidential & Proprietary"
+])
+    converter.save_to_markdown(markdown, "searchquality_guidelines.md")
     print("konwertowanie pdf do markdown zakończone")
     

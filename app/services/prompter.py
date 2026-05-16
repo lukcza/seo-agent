@@ -28,7 +28,7 @@ async def get_seo_data(content: str) -> SEOData:
         {content}
         """
         response = await client.aio.models.generate_content(
-            model='gemini-2.0-flash',
+            model='models/gemini-2.0-flash',
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
                 temperature=0.5,
@@ -47,11 +47,12 @@ async def get_refined_seo_data(
     locality: str = "",
     target_audience: str = "",
     usp: str = "",
-    website_analysis: str = ""
+    website_analysis: str = "",
+    knowledge_context: str = ""
 ) -> SEOData:
     """
     Generuje w pełni zoptymalizowane pod SEO metadane i treść, uwzględniając
-    lokalizację, grupę docelową, USP oraz analizę dotychczasowych błędów strony.
+    lokalizację, grupę docelową, USP, analizę błędów strony oraz wiedzę z RAG.
     """
     if not content or len(content.strip()) == 0:
         raise ValueError("Content cannot be empty")
@@ -64,9 +65,13 @@ async def get_refined_seo_data(
         if usp:
             refinement_context += f"- Wyróżniki oferty (USP) / Główne usługi: {usp}\n"
         if website_analysis:
-            refinement_context += f"- Wykryte błędy/braki istniejącej strony (napraw je i uwzględnij w optymalizacji):\n{website_analysis}\n"
+            refinement_context += f"- Wykryte błędy/braki istniejącej strony:\n{website_analysis}\n"
+        if knowledge_context:
+            refinement_context += f"- Dodatkowe wytyczne techniczne (RAG):\n{knowledge_context}\n"
 
         prompt = f"""You are an elite SEO expert. Analyze the following content and business context, then generate highly-optimized Polish SEO metadata in JSON format.
+        
+        WAŻNE: Jeśli podano "Dodatkowe wytyczne techniczne (RAG)", potraktuj je jako nadrzędne zasady optymalizacji.
         
         The JSON object must have the following keys:
         - "title": Highly optimized SEO Title in Polish (strictly maximum 50 characters, highly clickable, targeting key terms)
@@ -83,7 +88,7 @@ async def get_refined_seo_data(
         {refinement_context}
         """
         response = await client.aio.models.generate_content(
-            model='gemini-2.0-flash',
+            model='models/gemini-2.0-flash',
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
                 temperature=0.5,
@@ -142,7 +147,7 @@ async def assess_prompt_gaps(initial_prompt: str, website_context: str = "") -> 
         {website_context}
         """
         response = await client.aio.models.generate_content(
-            model='gemini-2.0-flash',
+            model='models/gemini-2.0-flash',
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
                 temperature=0.2,
@@ -165,12 +170,18 @@ async def assess_prompt_gaps(initial_prompt: str, website_context: str = "") -> 
             "usp": {"present": False, "value": "", "question": "Jakie są główne wyróżniki Twojej firmy (USP)?:"}
         }
 
-async def analyze_scraped_seo(seo_metadata: dict) -> str:
+async def analyze_scraped_seo(seo_metadata: dict, knowledge_context: str = "") -> str:
     """
-    Tworzy kompleksowy raport audytu SEO w języku polskim za pomocą Gemini 2.0 Flash.
+    Tworzy kompleksowy raport audytu SEO w języku polskim za pomocą Gemini 2.0 Flash,
+    uwzględniając dane techniczne strony oraz opcjonalną wiedzę z bazy wiedzy RAG.
     """
     try:
+        rag_section = ""
+        if knowledge_context:
+            rag_section = f"\nUżyj poniższych wytycznych technicznych jako standardu przy ocenie:\n{knowledge_context}\n"
+
         prompt = f"""Jesteś wybitnym specjalistą ds. audytów SEO. Przeanalizuj poniższe dane techniczne ze skanowania strony internetowej i stwórz profesjonalny, szczegółowy oraz czytelny raport audytu SEO w języku polskim.
+        {rag_section}
         
         Raport musi w jasny sposób:
         1. Wskazać mocne strony (jeśli występują).
@@ -184,7 +195,7 @@ async def analyze_scraped_seo(seo_metadata: dict) -> str:
         {json.dumps(seo_metadata, indent=2, ensure_ascii=False)}
         """
         response = await client.aio.models.generate_content(
-            model='gemini-2.0-flash',
+            model='models/gemini-2.0-flash',
             contents=prompt
         )
         return response.text.strip()
