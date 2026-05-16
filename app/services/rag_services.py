@@ -11,7 +11,7 @@ load_dotenv()
 class RAGServices:
     def __init__(self):
         self.db_manager = SEODatabaseManager()
-        self.client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+        self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
     def chunk_document(self, document:str, chunk_size:int=1000, chunk_overlap:int=200) -> list[str]:
         text_splitter = MarkdownTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
@@ -19,10 +19,17 @@ class RAGServices:
 
     def vectorize_chunks(self, chunks:list[str]) -> list[list[float]]:
         response = self.client.models.embed_content(
-            model='gemini-embedding-2',
+            model='text-embedding-004',
             contents=chunks
         )
         return [item.values for item in response.embeddings]
+
+    def query_knowledge(self, query: str, top_k: int = 3):
+        query_embedding = self.client.models.embed_content(
+            model='text-embedding-004',
+            contents=query
+        ).embeddings[0].values
+        return self.db_manager.search_knowledge(query_embedding, top_k)
 
 if __name__ == "__main__":
     rag_services = RAGServices()
