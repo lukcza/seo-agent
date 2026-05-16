@@ -35,7 +35,7 @@ class SEODatabaseManager:
     def save_rag_chunk(self, source: str, chunk_text: str, embedding: list[float]) -> None:
         self._init_db()
         self.cursor.execute("""
-        INSERT INTO rag_chunks (source, chunk_text, embedding)
+        INSERT INTO rag_knowledge (source, chunk_text, embedding)
         VALUES (?, ?, ?)
         """, (source, chunk_text, json.dumps(embedding)))
         self.conn.commit()
