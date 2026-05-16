@@ -8,3 +8,8 @@ pydantic
 langchain
 langchain-community
 unstructured
+google-generativeai
+pdfminer.six
+langchain-text-splitters
+pi-heif
+

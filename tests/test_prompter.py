@@ -4,7 +4,7 @@ import os
 import json
 
 # pyrefly: ignore [missing-import]
-import google.generativeai as genai
+from google import genai
 from app.services.prompter import get_seo_data, verify_seo_data
 from app.models.seo import SEOData
 
@@ -25,38 +25,32 @@ class TestPrompter(unittest.IsolatedAsyncioTestCase):
             await get_seo_data(None)
         self.assertEqual(str(context.exception), "Content cannot be empty")
 
-    @patch("app.services.prompter.genai")
-    async def test_get_seo_data_success(self, mock_genai):
+    @patch("app.services.prompter.client")
+    async def test_get_seo_data_success(self, mock_client):
         """Test successful API call and returned text."""
-        mock_client = MagicMock()
-        mock_genai.GenerativeModel.return_value = mock_client
-
         mock_response = MagicMock()
         mock_response.text = '{"title": "SEO Title", "description": "SEO Desc", "keywords": "test", "content": "SEO Content"}'
         
-        mock_client.generate_content_async = AsyncMock(return_value=mock_response)
+        mock_client.aio.models.generate_content = AsyncMock(return_value=mock_response)
 
         test_content = "Przykładowy tekst do analizy SEO."
         result = await get_seo_data(test_content)
-        mock_genai.GenerativeModel.assert_called_once()
-        args, kwargs = mock_genai.GenerativeModel.call_args
-        self.assertEqual(args[0], 'gemini-2.5-flash')
-        mock_genai.GenerationConfig.assert_called_once_with(
-            response_mime_type="application/json",
-            temperature=0.5
-        )
+        
+        mock_client.aio.models.generate_content.assert_called_once()
+        args, kwargs = mock_client.aio.models.generate_content.call_args
+        self.assertEqual(kwargs['model'], 'gemini-2.0-flash')
+        self.assertIn("SEO Title", result.title)
+        
         self.assertIsInstance(result, SEOData)
         self.assertEqual(result.title, "SEO Title")
         self.assertEqual(result.description, "SEO Desc")
         self.assertEqual(result.keywords, "test")
         self.assertEqual(result.content, "SEO Content")
 
-    @patch("app.services.prompter.genai")
-    async def test_get_seo_data_api_error(self, mock_genai):
+    @patch("app.services.prompter.client")
+    async def test_get_seo_data_api_error(self, mock_client):
         """Test error handling when Gemini API raises an exception."""
-        mock_client = MagicMock()
-        mock_genai.GenerativeModel.return_value = mock_client
-        mock_client.generate_content_async = AsyncMock(side_effect=Exception("API Connection Error"))
+        mock_client.aio.models.generate_content = AsyncMock(side_effect=Exception("API Connection Error"))
 
         result = await get_seo_data("Przykładowy tekst")
         self.assertIsNone(result)

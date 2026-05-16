@@ -2,12 +2,13 @@ import json
 import os
 import asyncio 
 # pyrefly: ignore [missing-import]
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 from app.models.seo import SEOData
 
 load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 async def get_seo_data(content: str) -> SEOData:
     """
@@ -16,13 +17,6 @@ async def get_seo_data(content: str) -> SEOData:
     if not content or len(content.strip()) == 0:
         raise ValueError("Content cannot be empty")
     try:
-        model = genai.GenerativeModel(
-            'gemini-2.5-flash',
-            generation_config=genai.GenerationConfig(
-                response_mime_type="application/json",
-                temperature=0.5,
-            )
-        )
         prompt = f"""You are a SEO expert. Analyze the following content and generate SEO metadata in JSON format. The JSON object should have the following keys:
         - "title": Title of the content (strictly maximum 50 characters)
         - "description": Description of the content (strictly maximum 130 characters)
@@ -33,7 +27,14 @@ async def get_seo_data(content: str) -> SEOData:
         Content to analyze:
         {content}
         """
-        response = await model.generate_content_async(prompt.format(content=content))
+        response = await client.aio.models.generate_content(
+            model='gemini-2.0-flash',
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.5,
+            ),
+            contents=prompt
+        )
         
         data_dict = json.loads(response.text)
         return SEOData.from_dict(data_dict)
@@ -55,14 +56,6 @@ async def get_refined_seo_data(
     if not content or len(content.strip()) == 0:
         raise ValueError("Content cannot be empty")
     try:
-        model = genai.GenerativeModel(
-            'gemini-2.5-flash',
-            generation_config=genai.GenerationConfig(
-                response_mime_type="application/json",
-                temperature=0.5,
-            )
-        )
-        
         refinement_context = ""
         if locality:
             refinement_context += f"- Lokalizacja / Obszar działania: {locality}\n"
@@ -77,7 +70,7 @@ async def get_refined_seo_data(
         
         The JSON object must have the following keys:
         - "title": Highly optimized SEO Title in Polish (strictly maximum 50 characters, highly clickable, targeting key terms)
-        - "description": Compelling meta description in Polish (strictly maximum 130 characters, with a clear call to action)
+        - "description": Compelling meta description in Polish (strictly maximum 130 characters, with a call to action)
         - "keywords": Comma-separated keywords in Polish (strictly maximum 40 characters in total)
         - "content": An engaging, professional, fully SEO-optimized content in Polish, structured with clear HTML/Markdown headings, targeting the correct audience, locality, and emphasizing the USP.
         
@@ -89,7 +82,14 @@ async def get_refined_seo_data(
         Business Context and Constraints:
         {refinement_context}
         """
-        response = await model.generate_content_async(prompt)
+        response = await client.aio.models.generate_content(
+            model='gemini-2.0-flash',
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.5,
+            ),
+            contents=prompt
+        )
         text = response.text.strip()
         if text.startswith("```json"):
             text = text[7:]
@@ -109,13 +109,6 @@ async def assess_prompt_gaps(initial_prompt: str, website_context: str = "") -> 
     Zwraca ustrukturyzowany słownik z informacją o brakach i wygenerowanymi pytaniami.
     """
     try:
-        model = genai.GenerativeModel(
-            'gemini-2.5-flash',
-            generation_config=genai.GenerationConfig(
-                response_mime_type="application/json",
-                temperature=0.2,
-            )
-        )
         prompt = f"""Jesteś doradcą SEO. Przeanalizuj poniższy opis/prompt użytkownika i opcjonalny kontekst strony internetowej pod kątem 3 kluczowych aspektów:
         1. **locality**: Lokalizacja/Miejscowość/Obszar (np. miasto, region, cała Polska, globalnie)
         2. **target_audience**: Grupa docelowa / Idealny klient (np. gracze, młodzież, firmy budowlane)
@@ -128,27 +121,34 @@ async def assess_prompt_gaps(initial_prompt: str, website_context: str = "") -> 
             "locality": {{
                 "present": true/false,
                 "value": "znaleziona wartość lub pusta",
-                "question": "Zwięzłe, spersonalizowane pytanie o miejscowość/zasięg działania (np. 'W jaką miejscowość lub region celujesz ze swoimi usługami? Jeśli działasz w całej Polsce, wpisz \"cała Polska\".')"
+                "question": "Zwięzłe, spersonalizowane pytanie o miejscowość/zasięg działania (np. 'W jaką miejscowość lub region celujesz ze swoimi usługami?')"
             }},
             "target_audience": {{
                 "present": true/false,
                 "value": "znaleziona wartość lub pusta",
-                "question": "Zwięzłe, spersonalizowane pytanie o grupę docelową (np. 'Do kogo dokładnie kierujesz swoją ofertę? Kto jest Twoim idealnym odbiorcą?')"
+                "question": "Zwięzłe, spersonalizowane pytanie o grupę docelową (np. 'Do kogo dokładnie kierujesz swoją ofertę?')"
             }},
             "usp": {{
                 "present": true/false,
                 "value": "znaleziona wartość lub pusta",
-                "question": "Zwięzłe, spersonalizowane pytanie o unikalne wyróżniki oferty i słowa kluczowe (np. 'Co wyróżnia Twój salon na tle konkurencji i na jakich konkretnych usługach najbardziej Ci zależy?')"
+                "question": "Zwięzłe, spersonalizowane pytanie o unikalne wyróżniki oferty (np. 'Co wyróżnia Twój salon na tle konkurencji?')"
             }}
         }}
-
+        
         Tekst wejściowy użytkownika:
         {initial_prompt}
 
         Kontekst ze strony www:
         {website_context}
         """
-        response = await model.generate_content_async(prompt)
+        response = await client.aio.models.generate_content(
+            model='gemini-2.0-flash',
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.2,
+            ),
+            contents=prompt
+        )
         text = response.text.strip()
         if text.startswith("```json"):
             text = text[7:]
@@ -160,32 +160,33 @@ async def assess_prompt_gaps(initial_prompt: str, website_context: str = "") -> 
     except Exception as e:
         print(f"Błąd podczas oceny braków promptu: {e}")
         return {
-            "locality": {"present": False, "value": "", "question": "Podaj lokalizację / miasto pozycjonowania (np. Warszawa, cała Polska):"},
-            "target_audience": {"present": False, "value": "", "question": "Kto jest głównym odbiorcą / grupą docelową Twojej oferty?:"},
-            "usp": {"present": False, "value": "", "question": "Jakie są główne usługi lub wyróżniki Twojej firmy (USP)?:"}
+            "locality": {"present": False, "value": "", "question": "Podaj lokalizację / miasto pozycjonowania:"},
+            "target_audience": {"present": False, "value": "", "question": "Kto jest głównym odbiorcą Twojej oferty?:"},
+            "usp": {"present": False, "value": "", "question": "Jakie są główne wyróżniki Twojej firmy (USP)?:"}
         }
 
 async def analyze_scraped_seo(seo_metadata: dict) -> str:
     """
-    Tworzy kompleksowy raport audytu SEO w języku polskim za pomocą Gemini 2.5 Flash,
-    analizując dane techniczne i potencjalne błędy pobranej strony.
+    Tworzy kompleksowy raport audytu SEO w języku polskim za pomocą Gemini 2.0 Flash.
     """
     try:
-        model = genai.GenerativeModel('gemini-2.5-flash')
         prompt = f"""Jesteś wybitnym specjalistą ds. audytów SEO. Przeanalizuj poniższe dane techniczne ze skanowania strony internetowej i stwórz profesjonalny, szczegółowy oraz czytelny raport audytu SEO w języku polskim.
         
         Raport musi w jasny sposób:
         1. Wskazać mocne strony (jeśli występują).
-        2. Wypisać konkretne **BRAKI** (np. brak opisu, brak nagłówka H1, brak Open Graph).
-        3. Wskazać **MOŻLIWE BŁĘDY** techniczne (np. za długi tytuł/opis, wiele nagłówków H1, brak atrybutów ALT w obrazkach).
-        4. Sformułować konkretne **REKOMENDACJE** i kroki naprawcze dla optymalizacji SEO strony.
+        2. Wypisać konkretne **BRAKI**.
+        3. Wskazać **MOŻLIWE BŁĘDY** techniczne.
+        4. Sformułować konkretne **REKOMENDACJE**.
 
-        Używaj ikon (emoji) i struktury markdown, aby raport wyglądał spektakularnie i czytelnie dla klienta.
+        Używaj ikon (emoji) i struktury markdown.
         
         Dane techniczne strony:
         {json.dumps(seo_metadata, indent=2, ensure_ascii=False)}
         """
-        response = await model.generate_content_async(prompt)
+        response = await client.aio.models.generate_content(
+            model='gemini-2.0-flash',
+            contents=prompt
+        )
         return response.text.strip()
     except Exception as e:
         return f"🚨 Wystąpił błąd podczas generowania raportu SEO przez Gemini: {e}"
