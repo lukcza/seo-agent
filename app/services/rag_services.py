@@ -1,4 +1,4 @@
-from fsspec import json
+import json
 import os
 from google import genai
 from dotenv import load_dotenv
