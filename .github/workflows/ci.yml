@@ -21,6 +21,11 @@ jobs:
         python-version: '3.11'
         cache: 'pip'
 
+    - name: 🛠️ Install System Dependencies (Linux)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libmagic-dev poppler-utils tesseract-ocr
+
     - name: 📦 Install Dependencies
       run: |
         python -m pip install --upgrade pip
