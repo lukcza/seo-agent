@@ -147,4 +147,4 @@ W repozytorium skonfigurowany jest automatyczny rurociąg CI/CD (`.github/workfl
 2.  **Uruchomienie wszystkich 13 testów jednostkowych** 
 3.  **Weryfikację budowania obrazu Docker** 
 
----
+--- 
