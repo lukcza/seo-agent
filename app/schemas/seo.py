@@ -30,8 +30,8 @@ class TechnicalMetrics(BaseModel):
     word_count: int
     robots_txt_status: int
     sitemap_xml_status: int
-    top_words: List[Any]
-    top_bigrams: List[Any]
+    top_words: List[str]
+    top_bigrams: List[str]
     domain: str
     schema_types: List[str]
     https_status: bool
