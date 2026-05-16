@@ -143,8 +143,8 @@ python -m unittest discover -s tests -v
 ## 🤖 Integracja CI/CD (GitHub Actions)
 
 W repozytorium skonfigurowany jest automatyczny rurociąg CI/CD (`.github/workflows/ci.yml`), który przy każdym `push` i `pull_request` na gałęzie `main`/`master`/`develop` wykonuje:
-1.  **Kompilację składniową** kodu Pythona.
-2.  **Uruchomienie wszystkich 13 testów jednostkowych** (z keszowaniem pakietów pip).
-3.  **Weryfikację budowania obrazu Docker** (z szybkim keszowaniem warstw GHA).
+1.  **Kompilację składniową**
+2.  **Uruchomienie wszystkich 13 testów jednostkowych** 
+3.  **Weryfikację budowania obrazu Docker** 
 
 --- 

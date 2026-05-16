@@ -28,12 +28,10 @@ async def analyze_website_technical(request: AuditRequest):
     if not url:
         raise HTTPException(status_code=400, detail="Adres URL nie może być pusty.")
     
-    # Pobranie danych technicznych i struktury SEO witryny
     scraped_data = scrape_website_seo(url)
     if "error" in scraped_data:
         raise HTTPException(status_code=400, detail=scraped_data["error"])
         
-    # Generowanie merytorycznego raportu z audytu przy użyciu LLM
     audit_report = await analyze_scraped_seo(scraped_data)
     
     return {

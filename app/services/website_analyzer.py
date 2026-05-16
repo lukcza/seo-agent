@@ -102,7 +102,7 @@ def scrape_website_seo(url: str) -> dict:
     clean_text = re.sub(r'[^a-zA-Z0-9\s]', '', clean_text)
     clean_text = ' '.join(clean_text.split()).lower()
     
-    # Eliminacja stop words (polskie i angielskie spójniki/partykuły)
+    # Eliminacja stop words 
     stop_words = ["a", "i", "w", "z", "na", "do", "od", "za", "przez", "dla", "po", "pod", "nad", "obok", "przed", "za", "pod", "nad", "obok", "przed", "za", "pod", "nad", "obok", "przed"]
     words = clean_text.split()
     filtered_words = [word for word in words if word not in stop_words]
